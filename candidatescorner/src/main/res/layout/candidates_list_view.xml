@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="5dp">
+
+    <ImageView
+        android:id="@+id/candidateImg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="10dp" />
+
+    <TextView
+        android:id="@+id/candidateName"
+        android:layout_width="205dp"
+        android:layout_height="30dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/candidateImg"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/candidateOffice"
+        android:layout_width="215dp"
+        android:layout_height="30dp"
+        android:layout_below="@id/candidateName"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/candidateImg"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:textAlignment="center"
+        android:textSize="14sp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/candidateId"
+        android:layout_width="65dp"
+        android:layout_height="25dp"
+        android:layout_toRightOf="@id/candidateName"
+        android:visibility="invisible" />
+
+</RelativeLayout>

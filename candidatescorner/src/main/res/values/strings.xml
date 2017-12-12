@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Candidates Corner</string>
+    <string name="appTitle">Candidates Corner 2018</string>
+
+    <!-- Menu Option Titles -->
+    <string name="all_candidates_title">All Candidates</string>
+    <string name="top_candidates_title">Top Rated Candidates</string>
+    <string name="run_office_title">Run for Office</string>
+
+    <!-- Candidate Details Titles -->
+    <string name="profile_label">Profile:</string>
+    <string name="rating_label">Rate this candidate:</string>
+
+    <!-- Remote Database-->
+    <string name="restSqlHost">annapolisalumnaedstcloud.org</string>
+    <string name="restSqlPath">restsql-0.8.12/res/Candidates</string>
+    <string name="acceptedContentType">application/json</string>
+
+    <!-- No Candidates Message -->
+    <string name="noCandidates">No candidates available at this time.</string>
+
+    <!-- Intent Data Keys -->
+    <string name="candidate_detail_key">com.example.candidatescorner.DETAIL</string>
+
+</resources>

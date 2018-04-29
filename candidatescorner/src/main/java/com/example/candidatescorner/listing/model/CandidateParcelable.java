@@ -52,7 +52,7 @@ public class CandidateParcelable implements Parcelable {
         bundle.putString(FIRST_NAME_FLD, candidate.getFirstName());
         bundle.putString(LAST_NAME_FLD, candidate.getLastName());
         bundle.putString(PROFILE_FLD, candidate.getProfile());
-        bundle.putString(PHOTO_URL_FLD, candidate.getProfile());
+        bundle.putString(PHOTO_URL_FLD, candidate.getPhotoUrl());
 
         dest.writeBundle(bundle);
     }

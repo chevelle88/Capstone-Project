@@ -17,6 +17,7 @@ public class CandidatesView extends RecyclerView.ViewHolder {
 
     private Context context;
     private Candidate candidate;
+    private CandidatesAdapter adapter;
 
     public CandidatesView(View view) {
         super(view);
@@ -24,9 +25,10 @@ public class CandidatesView extends RecyclerView.ViewHolder {
         view.setOnClickListener(new CandidateListener(this));
     }
 
-    public void setCandidate(Context context, Candidate candidate) {
+    public void setCandidate(Context context, Candidate candidate, CandidatesAdapter adapter) {
         this.context = context;
         this.candidate = candidate;
+        this.adapter = adapter;
 
         loadImage();
         setCandidateName();
@@ -40,6 +42,10 @@ public class CandidatesView extends RecyclerView.ViewHolder {
 
     public Context getContext() {
         return context;
+    }
+
+    public CandidatesAdapter getAdapter() {
+        return adapter;
     }
 
     private void loadImage() {

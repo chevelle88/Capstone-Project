@@ -2,7 +2,6 @@ package com.example.candidatescorner.service;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.util.Log;

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="chapter_offices">
+        <item>President</item>
+        <item>1st Vice President</item>
+        <item>2nd Vice President</item>
+        <item>Recording Secretary</item>
+        <item>Corresponding Secretary</item>
+        <item>Financial Secretary</item>
+        <item>Treasurer</item>
+        <item>Sergeant-at-Arms</item>
+        <item>Journalist</item>
+        <item>Historian</item>
+        <item>Audit Committee Chair</item>
+        <item>Nominating Committee Chair</item>
+        <item>Nominating Committee Member</item>
+    </string-array>
+</resources>

@@ -9,7 +9,7 @@
 
     <!-- Candidate Details Titles -->
     <string name="profile_label">Profile:</string>
-    <string name="rating_label">Rate this candidate:</string>
+    <string name="rating_label">Rate candidate:</string>
 
     <!-- Remote Database-->
     <string name="restSqlHost">annapolisalumnaedstcloud.org</string>
@@ -19,7 +19,20 @@
     <!-- No Candidates Message -->
     <string name="noCandidates">No candidates available at this time.</string>
 
-    <!-- Intent Data Keys -->
-    <string name="candidate_detail_key">com.example.candidatescorner.DETAIL</string>
+    <!-- Data Keys -->
+    <string name="candidates_detail_key">com.example.candidatescorner.DETAIL</string>
+    <string name="candidate_selected_key">com.example.candidatescorner.SELECTED</string>
+    <string name="office_candidates_key">com.example.candidatescorner.OFFICE</string>
+    <string name="candidates_menu_key">com.example.candidatescorner.MENUOPTION</string>
+
+    <!-- Shared Preference Name -->
+    <string name="ratings_pref_file">CandidatesRatings</string>
+    <string name="election_year">election.year.pref</string>
+
+    <!-- Dialog -->
+    <string name="dlgTitle">Run For Office</string>
+    <string name="dlgTag">runForOffice</string>
+    <string name="submitBtn">Submit</string>
+    <string name="cancelBtn">Cancel</string>
 
 </resources>

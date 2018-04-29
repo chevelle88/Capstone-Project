@@ -69,6 +69,8 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
 
             candidates.add(candidate);
         }
+
+
     }
 
     public void clearCandidates() {
@@ -87,11 +89,45 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
     public void onBindViewHolder(CandidatesView candidatesView, int position) {
         Candidate candidate = candidates.get(position);
 
-        candidatesView.setCandidate(context, candidate);
+        candidatesView.setCandidate(context, candidate, this);
     }
 
     @Override
     public int getItemCount() {
         return candidates.size();
+    }
+
+    public List<Candidate> findOfficeCandidates(String office) {
+        String candidateOffice;
+        List<Candidate> others = new ArrayList<>();
+
+        for (Candidate candidate : candidates) {
+            candidateOffice = candidate.getOffice();
+
+            if (candidateOffice.equals(office)) {
+                others.add(candidate);
+            }
+        }
+
+        return others;
+    }
+
+    public List<Integer> getCandidatesIds(List<String> members) {
+        String name;
+        List<Integer> ids = new ArrayList<>();
+
+        for (Candidate candidate : candidates) {
+            name = candidate.getFirstName() + " " + candidate.getLastName();
+
+            for (String member : members) {
+
+                if (name.equalsIgnoreCase(member)) {
+                    ids.add(candidate.getId());
+                    break;
+                }
+            }
+        }
+
+        return ids;
     }
 }

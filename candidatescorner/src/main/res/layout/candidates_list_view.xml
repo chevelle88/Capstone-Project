@@ -17,7 +17,7 @@
 
     <TextView
         android:id="@+id/candidateName"
-        android:layout_width="205dp"
+        android:layout_width="255dp"
         android:layout_height="30dp"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="20dp"
@@ -30,7 +30,7 @@
 
     <TextView
         android:id="@+id/candidateOffice"
-        android:layout_width="215dp"
+        android:layout_width="255dp"
         android:layout_height="30dp"
         android:layout_below="@id/candidateName"
         android:layout_marginLeft="20dp"
@@ -43,7 +43,7 @@
 
     <TextView
         android:id="@+id/candidateId"
-        android:layout_width="65dp"
+        android:layout_width="45dp"
         android:layout_height="25dp"
         android:layout_toRightOf="@id/candidateName"
         android:visibility="invisible" />

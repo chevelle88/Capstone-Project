@@ -1,27 +1,33 @@
 package com.example.candidatescorner;
 
-import android.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.content.Intent;
-import android.content.Loader;
-import android.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.content.CursorLoader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 import com.example.candidatescorner.data.CandidatesDBUtil;
+import com.example.candidatescorner.listing.model.CandidateParcelable;
 import com.example.candidatescorner.service.CandidatesService;
-import com.example.candidatescorner.listing.CandidatesAdapter;
+import com.example.candidatescorner.listing.CandidatesFragment;
+import com.example.candidatescorner.details.CandidateDetailsFragment;
 
-public class MainActivity extends AppCompatActivity
-        implements LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>,
+        CandidatesFragment.CandidateSelectedListener,
+        RunForOfficeFragmentDialog.RunForOfficeDialogListener {
 
     /*
     NOTE: Use the common intent for email to send a message to the chair
@@ -31,41 +37,71 @@ public class MainActivity extends AppCompatActivity
     private static final int ALL_CANDIDATES = 10;
     private static final int TOP_RATED_CANDIDATES = 11;
 
+    // Minimum Top Candidate Rating
+    private static final float TOP_MIN_RATING = 3.3f;
+
+    // Current Candidate Menu Option
     private int candidatesOption;
 
-    private TextView emptySlate;
-    private RecyclerView candidates;
-    private CandidatesAdapter adapter;
+    private boolean multiPaned;
+    private SharedPreferences ratings;
+    private List<String> topRatedCandidates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Intent intent;
+        String key;
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        /*
-         1. Start service to get candidates (Done)
-         2. setup the menu (Done)
-         3. setup shared preferences
-         4. setup and start loader (Done)
-         */
-
-        Intent intent = new Intent(this, CandidatesService.class);
+        // Start service to get all candidates.
+        intent = new Intent(this, CandidatesService.class);
         startService(intent);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.aacdstToolbar);
-        setSupportActionBar(toolbar);
+        // Create top-rated list;
+        topRatedCandidates = new ArrayList<>();
 
-        candidatesOption = ALL_CANDIDATES;
 
-        emptySlate = (TextView) findViewById(R.id.emptySlate);
+        // Set view status.
+        setMultiPanedState();
 
-        adapter = new CandidatesAdapter(this);
+        // Load the candidates fragment.
+        if (savedInstanceState == null) {
 
-        candidates = (RecyclerView) findViewById(R.id.candidates_list);
-        candidates.setLayoutManager(new LinearLayoutManager(this));
-        candidates.setAdapter(adapter);
+            // Set default menu option.
+            candidatesOption = ALL_CANDIDATES;
 
-        getLoaderManager().initLoader(0, null, this);
+            // Add user interface if this is a single view.
+            if (!multiPaned) {
+                getSupportFragmentManager().beginTransaction()
+                    .add(R.id.mainContainer, new CandidatesFragment())
+                    .commit();
+            }
+        }
+        else {
+            key = getString(R.string.candidates_menu_key);
+            candidatesOption = savedInstanceState.getInt(key, ALL_CANDIDATES);
+        }
+
+        // Configure the preference file, CandidatesRatings.
+        configureCandidateRatingsPrefs();
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        String key = getString(R.string.candidates_menu_key);
+
+        outState.putInt(key, candidatesOption);
     }
 
     @Override
@@ -77,9 +113,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        // Use this to enable or disable the options menu if there are any ratings
+        MenuItem topRated = menu.findItem(R.id.topCandidates);
 
-        return true;
+        topRated.setEnabled(hasTopCandidates());
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -94,7 +132,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (selectedOption != candidatesOption) {
                     candidatesOption = selectedOption;
-                    getLoaderManager().restartLoader(0, null, this);
+                    getSupportLoaderManager().restartLoader(0, null, this);
                 }
 
                 break;
@@ -126,30 +164,167 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        CandidatesFragment candidatesFrag = getCandidatesListingView();
 
-        if ((data != null) && data.getCount() > 0) {
-            emptySlate.setVisibility(View.GONE);
-            candidates.setVisibility(View.VISIBLE);
-
-            adapter.loadCandidates(data);
-        }
-        else {
-            candidates.setVisibility(View.GONE);
-            emptySlate.setVisibility(View.VISIBLE);
-        }
+        candidatesFrag.showCandidatesListing(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        adapter.clearCandidates();
+        CandidatesFragment candidatesFrag = getCandidatesListingView();
+
+        candidatesFrag.resetCandidatesListing();
+    }
+
+    @Override
+    public void onCandidateSelected(String candidateToView,
+                        ArrayList<CandidateParcelable> officeCandidates) {
+
+        CandidateDetailsFragment detailsFrag = (CandidateDetailsFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.candidateInfo);
+
+        if (detailsFrag != null) {
+            detailsFrag.loadCandidateDetails(candidateToView, officeCandidates);
+        }
+    }
+
+    @Override
+    public void onOfficeSelected(DialogFragment dialog) {
+        dialog.dismiss();
+    }
+
+    @Override
+    public void onOfficeCancelled(DialogFragment dialog) {
+        dialog.dismiss();
+    }
+
+    public boolean isMultiPaned() {
+        return multiPaned;
     }
 
     private void showRunForOfficeDialog() {
-        // Display run for office dialog
+        String dlgTag = getString(R.string.dlgTag);
+
+        RunForOfficeFragmentDialog officeDlg = new RunForOfficeFragmentDialog();
+        officeDlg.show(getSupportFragmentManager(), dlgTag);
     }
 
     private String buildTopRatedCandidatesClause() {
-        // Use the shared preferences to get top rated candidates
-        return null;
+        List<Integer> ids = null;
+        StringBuilder idsList = new StringBuilder();
+        StringBuilder topRatedClause = new StringBuilder();
+        String curElectionYear = CandidatesDBUtil.getElectionYear();
+        CandidatesFragment candidatesFrag = getCandidatesListingView();
+
+        ids = candidatesFrag.findCandidatesIds(topRatedCandidates);
+
+        // Convert IDs to a comma-separated list.
+        for (int idx = 0; idx < ids.size(); idx++) {
+
+            if (idx > 0) {
+                idsList.append(", ");
+            }
+
+            idsList.append(ids.get(idx));
+        }
+
+        // Build WHERE clause.
+        topRatedClause.append("election_year = '" + curElectionYear + "' and ");
+        topRatedClause.append("_ID in (" + idsList.toString() + ")");
+
+        return topRatedClause.toString();
+    }
+
+    private void configureCandidateRatingsPrefs() {
+        String storedElectionYear = null;
+        SharedPreferences.Editor editor = null;
+        String prefFile = getString(R.string.ratings_pref_file);
+        String electionYearPref = getString(R.string.election_year);
+        String curElectionYear = CandidatesDBUtil.getElectionYear();
+
+        ratings = this.getSharedPreferences(prefFile, 0);
+        storedElectionYear = ratings.getString(electionYearPref, null);
+        editor = ratings.edit();
+
+        if (storedElectionYear != null) {
+
+            if (!storedElectionYear.equals(curElectionYear)) {
+                removeCandidatesRatings(editor, electionYearPref);
+
+                editor.putString(electionYearPref, curElectionYear);
+                editor.commit();
+            }
+        }
+        else {
+            editor.putString(electionYearPref, curElectionYear);
+            editor.commit();
+        }
+    }
+
+    private void removeCandidatesRatings(SharedPreferences.Editor editor, String ignorePref) {
+        Set<String> prefKeys = null;
+        Map<String, ?> allPrefs = null;
+
+        allPrefs = ratings.getAll();
+        prefKeys = allPrefs.keySet();
+
+        for (String prefKey : prefKeys) {
+
+            if (prefKey.equals(ignorePref)) {
+                continue;
+            }
+
+            editor.remove(prefKey);
+        }
+    }
+
+    private boolean hasTopCandidates() {
+        float rating;
+        int totalTopCandidates = 0;
+        Set<String> prefKeys = null;
+        Map<String, ?> allPrefs = null;
+        String electionYearPref = getString(R.string.election_year);
+
+        allPrefs = ratings.getAll();
+        prefKeys = allPrefs.keySet();
+
+        topRatedCandidates.clear();
+
+        for (String prefKey : prefKeys) {
+
+            if (prefKey.equalsIgnoreCase(electionYearPref)) {
+                continue;
+            }
+
+            rating = (Float) allPrefs.get(prefKey);
+
+            if (rating >= TOP_MIN_RATING) {
+                ++totalTopCandidates;
+
+                topRatedCandidates.add(prefKey);
+            }
+
+        }
+
+        return (totalTopCandidates > 0);
+    }
+
+    private void setMultiPanedState() {
+        Fragment listFragment = getSupportFragmentManager()
+                .findFragmentById(R.id.candidateListing);
+
+        Fragment detailsFragment = getSupportFragmentManager()
+                .findFragmentById(R.id.candidateInfo);
+
+        multiPaned = ((listFragment != null) && (detailsFragment != null));
+    }
+
+    private CandidatesFragment getCandidatesListingView() {
+        int fragId = (multiPaned) ? R.id.candidateListing : R.id.mainContainer;
+
+        CandidatesFragment listingView = (CandidatesFragment) getSupportFragmentManager()
+                    .findFragmentById(fragId);
+
+        return listingView;
     }
 }

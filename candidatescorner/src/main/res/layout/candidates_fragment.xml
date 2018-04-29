@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <ImageView
+        android:id="@+id/aacdstLogo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/aactoolbar_logo"
+        android:visibility="visible"
+        tools:ignore="ContentDescription" />
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/aacdstToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        app:title="@string/appTitle"
+        app:titleTextColor="#ffffff" />
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/candidates_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/emptySlate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/noCandidates"
+        android:visibility="gone"/>
+
+</android.widget.LinearLayout>

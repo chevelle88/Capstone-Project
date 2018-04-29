@@ -1,86 +1,72 @@
 package com.example.candidatescorner.details;
 
+
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.Intent;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 
-import com.squareup.picasso.Picasso;
 
 import com.example.candidatescorner.R;
-import com.example.candidatescorner.listing.model.Candidate;
 import com.example.candidatescorner.listing.model.CandidateParcelable;
 
 /**
  * Created by chevelle on 11/5/17.
  */
 
-public class CandidateDetailsActivity extends Activity {
+public class CandidateDetailsActivity extends FragmentActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        FragmentTransaction transaction = null;
 
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.candidate_detail_view);
-        populateCandidateView(getIntent());
+
+        if (savedInstanceState == null) {
+
+            getSupportFragmentManager().beginTransaction()
+                .add(R.id.candidateViewer, new CandidateDetailsFragment())
+                .commit();
+        }
+
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStart() {
+        String candidateToView = null;
+        Intent detailIntent = getIntent();
+        ArrayList<CandidateParcelable> parcelables = null;
+        String detailKey = getString(R.string.candidates_detail_key);
+        String selectedKey = getString(R.string.candidate_selected_key);
 
-        // save the rating in the preference
-    }
+        super.onStart();
 
-    private void populateCandidateView(Intent detailIntent) {
-        String detailKey = getString(R.string.candidate_detail_key);
-        CandidateParcelable parcelable = detailIntent.getParcelableExtra(detailKey);
-        Candidate candidate = parcelable.getCandidate();
+        if (detailIntent != null) {
+            candidateToView = detailIntent.getStringExtra(selectedKey);
+            parcelables = detailIntent.getParcelableArrayListExtra(detailKey);
 
-        loadPhoto(candidate.getPhotoUrl());
-        loadCandidateOffice(candidate.getOffice());
-        loadCandidateName(candidate.getFirstName(), candidate.getLastName());
-        loadCandidateProfile(candidate.getProfile());
-    }
-
-    private void loadPhoto(String photoUrl) {
-        boolean loaded = false;
-        ImageView img = (ImageView) findViewById(R.id.candidatePhoto);
-
-        try {
-
-            Picasso.with(this).load(photoUrl).into(img);
-            loaded = true;
+            showCandidateDetails(candidateToView, parcelables);
         }
-        catch(Exception uriErr) {}
-        finally {
-
-            if (!loaded) {
-                Picasso.with(this).load(R.drawable.dst_torch).into(img);
-            }
-        }
-
     }
 
-    private void loadCandidateOffice(String office) {
-        String officeTitle = "Candidate for " + office;
-        TextView officeView = (TextView) findViewById(R.id.chapterPosition);
-
-        officeView.setText(officeTitle);
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
-    private void loadCandidateName(String firstName, String lastName) {
-        String candidateName = firstName + " " + lastName;
-        TextView nameView = (TextView) findViewById(R.id.memberName);
+    public void showCandidateDetails(String candidateToView,
+                    ArrayList<CandidateParcelable> allOfficeCandidates) {
 
-        nameView.setText(candidateName);
-    }
+        CandidateDetailsFragment detailsFragment =
+            (CandidateDetailsFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.candidateViewer);
 
-    private void loadCandidateProfile(String profile) {
-        TextView profileView = (TextView) findViewById(R.id.scrolledProfile);
-        profileView.setText(profile);
+        detailsFragment.loadCandidateDetails(candidateToView, allOfficeCandidates);
     }
 
 }

@@ -3,7 +3,7 @@
     package="com.example.candidatescorner">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    
+
 
     <application
         android:allowBackup="true"
@@ -11,13 +11,22 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+
+        <activity android:name=".MembersLoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="com.example.candidatescorner.MAINACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".details.CandidateDetailsActivity" />
 
         <service
@@ -29,11 +38,13 @@
             android:authorities="com.example.candidatescorner.provider"
             android:exported="false" />
 
-        <receiver android:name=".CandidatesAppWidgetProvider">
+        <receiver android:name=".widget.CandidatesAppWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
+
+            <meta-data
+                android:name="android.appwidget.provider"
                 android:resource="@xml/candidate_appwidget_info" />
         </receiver>
 

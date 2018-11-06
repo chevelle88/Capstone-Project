@@ -3,12 +3,9 @@ package com.example.candidatescorner.details;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
-
+import androidx.fragment.app.FragmentActivity;
 
 import com.example.candidatescorner.R;
 import com.example.candidatescorner.listing.model.CandidateParcelable;
@@ -21,7 +18,6 @@ public class CandidateDetailsActivity extends FragmentActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        FragmentTransaction transaction = null;
 
         super.onCreate(savedInstanceState);
 
@@ -38,13 +34,13 @@ public class CandidateDetailsActivity extends FragmentActivity {
 
     @Override
     public void onStart() {
+        super.onStart();
+
         String candidateToView = null;
         Intent detailIntent = getIntent();
         ArrayList<CandidateParcelable> parcelables = null;
         String detailKey = getString(R.string.candidates_detail_key);
         String selectedKey = getString(R.string.candidate_selected_key);
-
-        super.onStart();
 
         if (detailIntent != null) {
             candidateToView = detailIntent.getStringExtra(selectedKey);

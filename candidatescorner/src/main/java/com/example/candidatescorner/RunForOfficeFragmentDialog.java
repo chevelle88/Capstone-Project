@@ -8,28 +8,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-
-import com.example.candidatescorner.R;
+import androidx.fragment.app.DialogFragment;
 
 /**
  * Created by chevelle on 3/18/18.
  */
 
-public class RunForOfficeFragmentDialog extends DialogFragment
-        implements OnItemSelectedListener {
+public class RunForOfficeFragmentDialog extends DialogFragment {
 
     public interface RunForOfficeDialogListener {
         public void onOfficeSelected(DialogFragment dlg);
         public void onOfficeCancelled(DialogFragment dlg);
     }
 
-    private DialogFragment officeDlg;
     private CharSequence selectedChapterOffice;
     private RunForOfficeDialogListener officeListener;
 
@@ -39,22 +34,25 @@ public class RunForOfficeFragmentDialog extends DialogFragment
         String submitBtnText = getString(R.string.submitBtn);
         String cancelBtnText = getString(R.string.cancelBtn);
         LayoutInflater inflater = ((MainActivity)officeListener).getLayoutInflater();
-        AlertDialog.Builder dlg = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder dlg = new AlertDialog.Builder(getActivity());
+        View dlgView = inflater.inflate(R.layout.run_for_office, null);
+
+        initSpinner(dlgView);
 
         dlg.setCustomTitle(titleView);
-        dlg.setView(inflater.inflate(R.layout.run_for_office, null));
+        dlg.setView(dlgView);
         dlg.setPositiveButton(submitBtnText, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                officeListener.onOfficeSelected(officeDlg);
+                officeListener.onOfficeSelected(RunForOfficeFragmentDialog.this);
             }
         });
 
         dlg.setNegativeButton(cancelBtnText, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                officeListener.onOfficeCancelled(officeDlg);
+                officeListener.onOfficeCancelled(RunForOfficeFragmentDialog.this);
             }
         });
 
@@ -66,7 +64,6 @@ public class RunForOfficeFragmentDialog extends DialogFragment
         super.onAttach(activity);
 
         try {
-            officeDlg = this;
             officeListener = (RunForOfficeDialogListener) activity;
         }
         catch(ClassCastException err) {
@@ -75,11 +72,12 @@ public class RunForOfficeFragmentDialog extends DialogFragment
         }
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstance) {
-        super.onActivityCreated(savedInstance);
+    public String getSelectedChapterOffice() {
+        return (String)selectedChapterOffice;
+    }
 
-        Spinner offices = (Spinner) officeDlg.getDialog().findViewById(R.id.chapterOffices);
+    private void initSpinner(View dlgView) {
+        Spinner offices = (Spinner)dlgView.findViewById(R.id.chapterOffices);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.chapter_offices,
@@ -87,15 +85,8 @@ public class RunForOfficeFragmentDialog extends DialogFragment
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         offices.setAdapter(adapter);
+        offices.setOnItemSelectedListener(new OfficeListener());
     }
-
-    @Override
-    public void onItemSelected(AdapterView adapterView, View view, int position, long id) {
-        selectedChapterOffice = ((TextView)view).getText();
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView adapterView) { }
 
     private TextView createDlgTitle() {
         String dlgTitle = getString(R.string.dlgTitle);
@@ -108,5 +99,18 @@ public class RunForOfficeFragmentDialog extends DialogFragment
         titleView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         return titleView;
+    }
+
+    private class OfficeListener implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView adapterView, View view, int position, long id) {
+            selectedChapterOffice = ((TextView)view).getText();
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
     }
 }

@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.ContentValues;
 import android.net.Uri;
-import android.util.Log;
 
 import java.io.Reader;
 import java.io.BufferedReader;
@@ -34,8 +33,6 @@ import static com.example.candidatescorner.data.CandidatesDBUtil.MODIFIED_DATE_F
 
 public class CandidatesService extends IntentService {
 
-    private static final String TAG = "CandidateService";
-
     private static final String CANDIDATES_JSON_KEY = "candidatess";
     private static final String CANDIDATE_UPDATE_CLAUSE =
             "first_name = ? and last_name = ? and election_year = ? and modified_date < ?";
@@ -62,9 +59,6 @@ public class CandidatesService extends IntentService {
 
             results = client.newCall(request).execute();
 
-            Log.i(TAG, "HTTP call success: " + results.isSuccessful());
-            Log.i(TAG, "HTTP Status: " + results.code());
-
             if (results.isSuccessful()) {
                 parseResults(results.body().charStream());
                 addCandidates();
@@ -72,9 +66,7 @@ public class CandidatesService extends IntentService {
             }
 
         }
-        catch (Exception anyErr) {
-            Log.e(TAG, "Error occurred while getting data. " + anyErr.getMessage());
-        }
+        catch (Exception anyErr) { }
         finally {
             if (results != null) {
                 results.close();
@@ -94,7 +86,6 @@ public class CandidatesService extends IntentService {
                 .addQueryParameter(CandidatesDBUtil.ELECTION_YEAR_FLD, electionYr)
                 .build();
 
-        Log.i(TAG, "Url: " + restSqlUrl.toString());
         return restSqlUrl;
     }
 
@@ -152,8 +143,6 @@ public class CandidatesService extends IntentService {
 
         candidatesToAdd = new ArrayList<ContentValues>();
         candidatesToUpdate = new ArrayList<ContentValues>();
-
-        Log.i(TAG, "Total Rows: " + totalRows);
 
         if (totalRows > 0) {
             for (int idx = 0; idx < totalRows; idx++) {

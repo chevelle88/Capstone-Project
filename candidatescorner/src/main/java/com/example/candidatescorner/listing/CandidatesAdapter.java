@@ -9,10 +9,10 @@ import android.database.Cursor;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.candidatescorner.R;
-import com.example.candidatescorner.data.CandidatesDBUtil;
+import com.example.candidatescorner.data.CandidatesResults;
 import com.example.candidatescorner.listing.model.Candidate;
 
 public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
@@ -20,57 +20,15 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
     private Context context;
     private LayoutInflater layoutInflater;
 
-    private String [] dbColumns;
     private List<Candidate> candidates;
 
     public CandidatesAdapter(Context context) {
         this.context = context;
         layoutInflater = ((Activity)context).getLayoutInflater();
-
-        candidates = new ArrayList<>();
-        dbColumns = CandidatesDBUtil.getCandidateListCols();
     }
 
     public void loadCandidates(Cursor cursor) {
-        int columnIdx;
-        Candidate candidate = null;
-
-        while (cursor.moveToNext()) {
-            candidate = new Candidate();
-
-            // Populate candidate data.
-            for (String dbColumn : dbColumns) {
-                columnIdx = cursor.getColumnIndex(dbColumn);
-
-                if (dbColumn.equals(CandidatesDBUtil.ID_FLD)) {
-                    candidate.setId(cursor.getInt(columnIdx));
-                }
-
-                if (dbColumn.equals(CandidatesDBUtil.FIRST_NAME_FLD)) {
-                    candidate.setFirstName(cursor.getString(columnIdx));
-                }
-
-                if (dbColumn.equals(CandidatesDBUtil.LAST_NAME_FLD)) {
-                    candidate.setLastName(cursor.getString(columnIdx));
-                }
-
-                if (dbColumn.equals(CandidatesDBUtil.OFFICE_FLD)) {
-                    candidate.setOffice(cursor.getString(columnIdx));
-                }
-
-                if (dbColumn.equals(CandidatesDBUtil.PHOTO_URL_FLD)) {
-                    candidate.setPhotoUrl(cursor.getString(columnIdx));
-                }
-
-                if (dbColumn.equals(CandidatesDBUtil.PROFILE_FLD)) {
-                    candidate.setProfile(cursor.getString(columnIdx));
-                }
-            }
-
-            candidates.add(candidate);
-        }
-
-
+        candidates = CandidatesResults.processResults(cursor);
     }
 
     public void clearCandidates() {
@@ -94,7 +52,9 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
 
     @Override
     public int getItemCount() {
-        return candidates.size();
+        int totalCandidates = (candidates != null) ? candidates.size() : 0;
+
+        return totalCandidates;
     }
 
     public List<Candidate> findOfficeCandidates(String office) {
@@ -116,6 +76,10 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
         String name;
         List<Integer> ids = new ArrayList<>();
 
+        if (candidates == null) {
+            return null;
+        }
+
         for (Candidate candidate : candidates) {
             name = candidate.getFirstName() + " " + candidate.getLastName();
 
@@ -130,4 +94,45 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
 
         return ids;
     }
+
+    public Candidate findCandidate(int candidateId) {
+
+        if (candidateId == RecyclerView.NO_ID) {
+            return candidates.get(0);
+        }
+
+        Candidate candidate = null;
+
+        for (int idx = 0; idx < candidates.size(); idx++) {
+            candidate = candidates.get(idx);
+
+            if (candidate.getId() == candidateId) {
+                break;
+            }
+        }
+
+
+        return candidate;
+    }
+
+    public int findCandidatePosition(int candidateId) {
+        int position = 0;
+        Candidate candidate;
+
+        if (candidateId == RecyclerView.NO_ID) {
+            return 0;
+        }
+
+        for (int idx = 0; idx < candidates.size(); idx++) {
+            candidate = candidates.get(idx);
+
+            if (candidate.getId() == candidateId) {
+                position = idx;
+                break;
+            }
+        }
+
+        return position;
+    }
+
 }

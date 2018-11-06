@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.gordonwong:material-sheet-fab-1.2.1">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/jetified-material-sheet-fab-1.2.1.aar/5bb62291e40e52be9c0b580e2c324532/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/jetified-material-sheet-fab-1.2.1.aar/5bb62291e40e52be9c0b580e2c324532/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.gordonwong/material-sheet-fab/1.2.1/a7d5f916943ec4c002bf10931cde9a5251090115/material-sheet-fab-1.2.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,18 +1,29 @@
 package com.example.candidatescorner;
 
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import android.content.Intent;
-import android.support.v4.content.Loader;
-import android.support.v4.content.CursorLoader;
+import androidx.loader.content.Loader;
+import androidx.loader.content.CursorLoader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
+import android.util.Log;
+
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.util.Map;
 import java.util.Set;
@@ -29,10 +40,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         CandidatesFragment.CandidateSelectedListener,
         RunForOfficeFragmentDialog.RunForOfficeDialogListener {
 
-    /*
-    NOTE: Use the common intent for email to send a message to the chair
-    if a member is interesting in running for office
-     */
     // Candidates Menu Options
     private static final int ALL_CANDIDATES = 10;
     private static final int TOP_RATED_CANDIDATES = 11;
@@ -44,15 +51,21 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     private int candidatesOption;
 
     private boolean multiPaned;
-    private SharedPreferences ratings;
+    private String savedIds;
+    private int orientationState;
+    private SharedPreferences candidatesPref;
     private List<String> topRatedCandidates;
+    private boolean restartLoader = false;
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         Intent intent;
         String key;
-
-        super.onCreate(savedInstanceState);
+        int lastOrientationState;
 
         setContentView(R.layout.activity_main);
 
@@ -63,13 +76,15 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         // Create top-rated list;
         topRatedCandidates = new ArrayList<>();
 
-
         // Set view status.
         setMultiPanedState();
+
+        orientationState = getResources().getConfiguration().orientation;
 
         // Load the candidates fragment.
         if (savedInstanceState == null) {
 
+            Log.i(TAG,"has no savedInstanceState");
             // Set default menu option.
             candidatesOption = ALL_CANDIDATES;
 
@@ -81,27 +96,58 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             }
         }
         else {
+
+            Log.i(TAG,"has savedInstanceState");
+            //Get current menu option.
             key = getString(R.string.candidates_menu_key);
             candidatesOption = savedInstanceState.getInt(key, ALL_CANDIDATES);
+
+            if (candidatesOption == TOP_RATED_CANDIDATES) {
+                key = getString(R.string.top_rated_ids);
+                savedIds = savedInstanceState.getString(key);
+            }
+
+            // Get last orientation state.
+            key = getString(R.string.last_orientation_state);
+            lastOrientationState = savedInstanceState.getInt(key);
+
+            // Set restartLoader based upon last orientation state.
+            restartLoader = (lastOrientationState != orientationState);
         }
 
-        // Configure the preference file, CandidatesRatings.
-        configureCandidateRatingsPrefs();
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        // Configure the preference file, CandidatesRatings.
+        configureCandidateRatingsPrefs();
+
         invalidateOptionsMenu();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        String key = getString(R.string.candidates_menu_key);
+        super.onSaveInstanceState(outState);
 
+        String key = getString(R.string.candidates_menu_key);
         outState.putInt(key, candidatesOption);
+
+        key = getString(R.string.last_orientation_state);
+        outState.putInt(key, orientationState);
+
+        if (candidatesOption == TOP_RATED_CANDIDATES) {
+            savedIds = buildTopCandidateIdsList();
+
+            key = getString(R.string.top_rated_ids);
+            outState.putString(key, savedIds);
+        }
     }
 
     @Override
@@ -139,6 +185,10 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
             case R.id.nominee:
                 showRunForOfficeDialog();
+                break;
+
+            case R.id.signOut:
+                signOut();
                 break;
 
             default:
@@ -184,13 +234,41 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
                 .findFragmentById(R.id.candidateInfo);
 
         if (detailsFrag != null) {
-            detailsFrag.loadCandidateDetails(candidateToView, officeCandidates);
+            detailsFrag.loadCandidateDetails(candidateToView, officeCandidates, isMultiPaned());
         }
+
     }
 
     @Override
     public void onOfficeSelected(DialogFragment dialog) {
+        Intent emailIntent;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String emailTo = getString(R.string.email_to);
+        String [] receivers = emailTo.split(",");
+        String emailSubject = getString(R.string.email_subject);
+        String selectedOffice = ((RunForOfficeFragmentDialog)dialog).getSelectedChapterOffice();
+        String emailBody = getString(R.string.email_body,
+                user.getDisplayName(), user.getEmail(), selectedOffice);
+        String dlgMsg = getString(R.string.dlg_msg);
+
+        // Build the email intent.
+        emailIntent = new Intent(Intent.ACTION_SENDTO);
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, receivers);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailSubject);
+        emailIntent.putExtra(Intent.EXTRA_TEXT, emailBody);
+        emailIntent.setType("text/plain");
+
+
+        if (emailIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(emailIntent);
+
+        }
+
         dialog.dismiss();
+
+        Toast.makeText(this, dlgMsg,
+                Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -202,6 +280,25 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         return multiPaned;
     }
 
+    public boolean isRestartLoader() {
+        Log.i(TAG, "restartLoader: " + restartLoader);
+        return restartLoader;
+    }
+
+    public boolean detailsInMultiPanedLoaded() {
+        boolean loaded = false;
+        CandidateDetailsFragment detailsFrag;
+
+        if (multiPaned) {
+            detailsFrag = (CandidateDetailsFragment)getSupportFragmentManager()
+                    .findFragmentById(R.id.candidateInfo);
+
+            loaded = detailsFrag.isDetailsRestored();
+        }
+
+        return loaded;
+    }
+
     private void showRunForOfficeDialog() {
         String dlgTag = getString(R.string.dlgTag);
 
@@ -210,13 +307,29 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     }
 
     private String buildTopRatedCandidatesClause() {
-        List<Integer> ids = null;
-        StringBuilder idsList = new StringBuilder();
+        String idsInList;
         StringBuilder topRatedClause = new StringBuilder();
         String curElectionYear = CandidatesDBUtil.getElectionYear();
+
+        idsInList = buildTopCandidateIdsList();
+
+        // Build WHERE clause.
+        topRatedClause.append("election_year = '" + curElectionYear + "' and ");
+        topRatedClause.append("_ID in (" + idsInList + ")");
+
+        return topRatedClause.toString();
+    }
+
+    private String buildTopCandidateIdsList() {
+        List<Integer> ids;
+        StringBuilder idsList = new StringBuilder();
         CandidatesFragment candidatesFrag = getCandidatesListingView();
 
         ids = candidatesFrag.findCandidatesIds(topRatedCandidates);
+
+        if (ids == null) {
+            return savedIds;
+        }
 
         // Convert IDs to a comma-separated list.
         for (int idx = 0; idx < ids.size(); idx++) {
@@ -228,28 +341,24 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             idsList.append(ids.get(idx));
         }
 
-        // Build WHERE clause.
-        topRatedClause.append("election_year = '" + curElectionYear + "' and ");
-        topRatedClause.append("_ID in (" + idsList.toString() + ")");
-
-        return topRatedClause.toString();
+        return idsList.toString();
     }
 
     private void configureCandidateRatingsPrefs() {
         String storedElectionYear = null;
         SharedPreferences.Editor editor = null;
-        String prefFile = getString(R.string.ratings_pref_file);
+        String prefFile = getString(R.string.candidates_pref_file);
         String electionYearPref = getString(R.string.election_year);
         String curElectionYear = CandidatesDBUtil.getElectionYear();
 
-        ratings = this.getSharedPreferences(prefFile, 0);
-        storedElectionYear = ratings.getString(electionYearPref, null);
-        editor = ratings.edit();
+        candidatesPref = this.getSharedPreferences(prefFile, 0);
+        storedElectionYear = candidatesPref.getString(electionYearPref, null);
+        editor = candidatesPref.edit();
 
         if (storedElectionYear != null) {
 
             if (!storedElectionYear.equals(curElectionYear)) {
-                removeCandidatesRatings(editor, electionYearPref);
+                removeCandidatesRatings(editor);
 
                 editor.putString(electionYearPref, curElectionYear);
                 editor.commit();
@@ -261,16 +370,17 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         }
     }
 
-    private void removeCandidatesRatings(SharedPreferences.Editor editor, String ignorePref) {
+    private void removeCandidatesRatings(SharedPreferences.Editor editor) {
         Set<String> prefKeys = null;
         Map<String, ?> allPrefs = null;
+        String electionYearPref = getString(R.string.election_year);
 
-        allPrefs = ratings.getAll();
+        allPrefs = candidatesPref.getAll();
         prefKeys = allPrefs.keySet();
 
         for (String prefKey : prefKeys) {
 
-            if (prefKey.equals(ignorePref)) {
+            if (prefKey.equals(electionYearPref)) {
                 continue;
             }
 
@@ -285,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         Map<String, ?> allPrefs = null;
         String electionYearPref = getString(R.string.election_year);
 
-        allPrefs = ratings.getAll();
+        allPrefs = candidatesPref.getAll();
         prefKeys = allPrefs.keySet();
 
         topRatedCandidates.clear();
@@ -327,4 +437,20 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
         return listingView;
     }
+
+    private void signOut() {
+
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        startActivity(new Intent(MainActivity.this,
+                                MembersLoginActivity.class));
+                        finish();
+                    }
+                });
+    }
+
 }

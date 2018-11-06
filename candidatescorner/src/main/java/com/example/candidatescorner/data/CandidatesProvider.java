@@ -8,8 +8,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.database.sqlite.SQLiteDatabase;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Created by chevelle on 7/7/17.

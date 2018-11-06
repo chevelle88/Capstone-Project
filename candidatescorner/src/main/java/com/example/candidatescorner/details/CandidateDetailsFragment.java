@@ -1,26 +1,26 @@
 package com.example.candidatescorner.details;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.util.Log;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.LinearLayout;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import com.squareup.picasso.Picasso;
-
-import io.codetail.widget.RevealLinearLayout;
-import com.gordonwong.materialsheetfab.MaterialSheetFab;
-import com.gordonwong.materialsheetfab.DimOverlayFrameLayout;
 
 import com.example.candidatescorner.R;
 import com.example.candidatescorner.listing.model.Candidate;
@@ -39,20 +39,21 @@ import java.util.TreeSet;
 
 public class CandidateDetailsFragment extends Fragment {
 
-    private static final String TAG = "CandidateDetails";
+    private static final String TAG = "DetailsFragmentActivity";
+
     private static final String HEADER_TITLE = "Select a candidate";
 
     private int candidateInView = -1;
+    private String lastViewedCandidate = null;
 
     private RatingBar ratingBar;
-    private MaterialSheetFab candidatesSheet;
+    //private MaterialSheetFab candidatesSheet;
+
     private Map<String, Candidate> officeCandidates;
     private Map<String, Float> candidatesRatings;
-    private SharedPreferences ratingsPref;
-    private Activity parent;
-
-    private String candidateToSave;
-    private ArrayList<CandidateParcelable> candidatesToSave;
+    private SharedPreferences candidatesPref;
+    private ArrayList<CandidateParcelable> parcelables;
+    private boolean detailsRestored = false;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,25 +70,22 @@ public class CandidateDetailsFragment extends Fragment {
     }
 
     public void onActivityCreated(Bundle saveInstanceState) {
-        String prefFile = getString(R.string.ratings_pref_file);
-
         super.onActivityCreated(saveInstanceState);
 
-        // Get the parent activity that contains this fragment.
-        parent = this.getActivity();
+        String prefFile = getString(R.string.candidates_pref_file);
 
         // Initialize rating bar.
         initRatingBar();
 
         // Get preferences file, CandidatesRatings.
-        ratingsPref = parent.getSharedPreferences(prefFile, 0);
+        candidatesPref = getActivity().getSharedPreferences(prefFile, 0);
     }
 
     public void onPause() {
         super.onPause();
 
         Set<String> keys = officeCandidates.keySet();
-        SharedPreferences.Editor editor = ratingsPref.edit();
+        SharedPreferences.Editor editor = candidatesPref.edit();
 
         for (String key : keys) {
             editor.putFloat(key, candidatesRatings.get(key));
@@ -97,65 +95,119 @@ public class CandidateDetailsFragment extends Fragment {
     }
 
     public void onSaveInstanceState(Bundle outState) {
-        String selectedCandidateKey = parent.getString(R.string.candidate_selected_key);
-        String officeCandidatesKey = parent.getString(R.string.office_candidates_key);
+        super.onSaveInstanceState(outState);
 
-        outState.putString(selectedCandidateKey, candidateToSave);
-        outState.putParcelableArrayList(officeCandidatesKey, candidatesToSave);
+        String candidateIdKey = getActivity().getString(R.string.candidate_id_key);
+        String lastViewedKey = getActivity().getString(R.string.candidate_last_view_key);
+        String officeListKey = getActivity().getString(R.string.candidates_list_key);
+
+        outState.putInt(candidateIdKey, candidateInView);
+        outState.putString(lastViewedKey, lastViewedCandidate);
+        outState.putParcelableArrayList(officeListKey, parcelables);
+    }
+
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+
+        int fragId = getId();
+        boolean multiPaned = (fragId == R.id.candidateInfo);
+
+        if (savedInstanceState != null) {
+            ArrayList<CandidateParcelable> candidates;
+            String lastViewKey = getActivity().getString(R.string.candidate_last_view_key);
+            String officeListKey = getActivity().getString(R.string.candidates_list_key);
+
+            lastViewedCandidate = savedInstanceState.getString(lastViewKey);
+            candidates = savedInstanceState.getParcelableArrayList(officeListKey);
+
+            // Restore content.
+            detailsRestored = true;
+            loadCandidateDetails(lastViewedCandidate, candidates, multiPaned);
+        }
     }
 
     public void loadCandidateDetails(String candidateToView,
-                         ArrayList<CandidateParcelable> parcelables ) {
+                                 ArrayList<CandidateParcelable> parcelables) {
+
+        loadCandidateDetails(candidateToView, parcelables, false);
+    }
+
+    public void loadCandidateDetails(String candidateToView,
+                         ArrayList<CandidateParcelable> parcelables, boolean multiPaned) {
+
 
         loadOfficeCandidates(parcelables);
 
-        createCandidatesListingView();
+        if (multiPaned) {
+            createMultiPanedCandidatesListingView();
+        }
+        else {
+            createCandidatesListingView();
+        }
 
         populateCandidateView(candidateToView);
     }
 
+    public boolean isDetailsRestored() {
+        return detailsRestored;
+    }
+
     private void createCandidatesListingView() {
+        boolean show = false;
 
         if (officeCandidates.size() > 1) {
-            createMaterialSheetList();
-            createMaterialSheetFab();
+            show = true;
+            createBottomSheetList();
+        }
+
+        showCandidatesListingView(show);
+    }
+
+    private void createMultiPanedCandidatesListingView() {
+        boolean show = false;
+        ListView listing = getActivity().findViewById(R.id.officeCandidates);
+
+        if (officeCandidates.size() > 1) {
+            show = true;
+
+            if (listing == null) {
+                createBottomSheetList();
+            }
+            else {
+                updateBottomSheetList();
+            }
+
+            showCandidatesListingView(true);
+        }
+
+        showCandidatesListingView(show);
+    }
+
+    private void showCandidatesListingView(boolean show) {
+        //FloatingActionButton fab = getActivity().findViewById(R.id.candidatesFab);
+        LinearLayout candidatesSheet = getActivity().findViewById(R.id.viewLayout);
+        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)candidatesSheet.getLayoutParams();
+        BottomSheetBehavior behavior = (BottomSheetBehavior)params.getBehavior();
+
+        if (show) {
+            //fab.show();
+            behavior.setPeekHeight(200);
+            behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
         else {
-            hideCandidatesListingView();
+            //fab.hide();
+            behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
-
     }
 
-    private void hideCandidatesListingView() {
-        CandidateDetailsFab fab = (CandidateDetailsFab) parent.findViewById(R.id.candidatesFab);
-        DimOverlayFrameLayout overlay = (DimOverlayFrameLayout) parent.findViewById(R.id.overlay);
-        RevealLinearLayout viewLayout = (RevealLinearLayout) parent.findViewById(R.id.viewLayout);
-
-        fab.setVisibility(View.GONE);
-        overlay.setVisibility(View.GONE);
-        viewLayout.setVisibility(View.GONE);
-    }
-
-    private void createMaterialSheetFab() {
-        View officeView = parent.findViewById(R.id.officeCandidates);
-        CandidateDetailsFab fab = (CandidateDetailsFab) parent.findViewById(R.id.candidatesFab);
-        DimOverlayFrameLayout overlay = (DimOverlayFrameLayout) parent.findViewById(R.id.overlay);
-        int officeViewColor = getResources().getColor(R.color.others_list_color);
-        int fabColor = getResources().getColor(R.color.colorAccent);
-
-        candidatesSheet = new MaterialSheetFab<>(fab, officeView,
-                overlay, officeViewColor, fabColor);
-
-    }
-
-    private void createMaterialSheetList() {
-        TextView header = new TextView(parent);
+    private void createBottomSheetList() {
+        TextView header = new TextView(getActivity());
         ArrayAdapter<String> nameAdapter = null;
         String [] candidatesNames = getCandidatesNames();
-        ListView listing = (ListView) parent.findViewById(R.id.officeCandidates);
+        ListView listing = getActivity().findViewById(R.id.officeCandidates);
         int backgroundColor = getResources().getColor(R.color.colorPrimary);
 
-        nameAdapter = new ArrayAdapter<String>(parent,
+        nameAdapter = new ArrayAdapter<String>(getActivity(),
                 R.layout.office_candidates_view, R.id.office_candidate_name);
         nameAdapter.addAll(candidatesNames);
 
@@ -163,22 +215,40 @@ public class CandidateDetailsFragment extends Fragment {
         listing.setOnItemClickListener(new OfficeCandidateListener());
 
         // Configure and add the a header to the list.
-        header.setText(HEADER_TITLE);
-        header.setHeight(90);
-        header.setPadding(16, 9, 0,0);
-        header.setTextAppearance(R.style.CandidatesHeader);
-        header.setBackgroundColor(backgroundColor);
-        listing.addHeaderView(header);
+        if (listing.getHeaderViewsCount() == 0) {
+            header.setText(HEADER_TITLE);
+            header.setHeight(90);
+            header.setPadding(16, 9, 0,0);
+            header.setTextAppearance(R.style.CandidatesHeader);
+            header.setBackgroundColor(backgroundColor);
+            listing.addHeaderView(header);
+        }
+
+    }
+
+    private void updateBottomSheetList() {
+        String [] candidatesNames = getCandidatesNames();
+        ListView listing = (ListView) getActivity().findViewById(R.id.officeCandidates);
+        HeaderViewListAdapter hdrAdapter = (HeaderViewListAdapter)listing.getAdapter();
+        ArrayAdapter<String> namesAdapter = (ArrayAdapter<String>)hdrAdapter.getWrappedAdapter();
+
+        namesAdapter.clear();
+        namesAdapter.addAll(candidatesNames);
     }
 
     private void initRatingBar() {
-        ratingBar = (RatingBar) parent.findViewById(R.id.candidateRating);
+        ratingBar = (RatingBar) getActivity().findViewById(R.id.candidateRating);
 
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
 
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
                 Candidate candidate = null;
+
+                if (officeCandidates == null) {
+                    return;
+                }
+
                 Set<String> keys = officeCandidates.keySet();
 
                 for (String key : keys) {
@@ -198,6 +268,8 @@ public class CandidateDetailsFragment extends Fragment {
         Candidate candidate = null;
         float rating;
 
+        this.parcelables = parcelables;
+
         officeCandidates = new HashMap<String, Candidate>();
         candidatesRatings = new HashMap<String, Float>();
 
@@ -207,16 +279,12 @@ public class CandidateDetailsFragment extends Fragment {
 
             officeCandidates.put(memberKey, candidate);
 
-            rating = ratingsPref.getFloat(memberKey, (float)0);
+            rating = candidatesPref.getFloat(memberKey, (float)0);
             candidatesRatings.put(memberKey, rating);
         }
-
-        // Save the office candidates.
-        candidatesToSave = parcelables;
     }
 
     private void populateCandidateView(String candidateToView) {
-        String candidateName = null;
         Candidate candidate = officeCandidates.get(candidateToView);
 
         if (candidateInView == candidate.getId()) {
@@ -224,26 +292,23 @@ public class CandidateDetailsFragment extends Fragment {
         }
 
         candidateInView = candidate.getId();
-        candidateName = candidate.getFirstName() + " " + candidate.getLastName();
+        lastViewedCandidate = candidate.getFirstName() + " " + candidate.getLastName();
 
-        loadPhoto(candidateName, candidate.getPhotoUrl());
+        loadPhoto(lastViewedCandidate, candidate.getPhotoUrl());
         loadCandidateOffice(candidate.getOffice());
-        loadCandidateName(candidateName);
+        loadCandidateName(lastViewedCandidate);
         loadCandidateProfile(candidate.getProfile());
-        loadCandidateRating(candidateName);
-
-        // Save the current candidate in view.
-        candidateToSave = candidateName;
+        loadCandidateRating(lastViewedCandidate);
     }
 
     private void loadPhoto(String candidateName, String photoUrl) {
         boolean loaded = false;
-        ImageView img = (ImageView) parent.findViewById(R.id.candidatePhoto);
+        ImageView img = (ImageView) getActivity().findViewById(R.id.candidatePhoto);
 
         try {
 
             if ((photoUrl != null) && !photoUrl.isEmpty()) {
-                Picasso.with(parent).load(photoUrl).into(img);
+                Picasso.with(getActivity()).load(photoUrl).into(img);
                 loaded = true;
             }
         }
@@ -251,7 +316,7 @@ public class CandidateDetailsFragment extends Fragment {
         finally {
 
             if (!loaded) {
-                Picasso.with(parent).load(R.drawable.aacdst_avatar).into(img);
+                Picasso.with(getActivity()).load(R.drawable.aacdst_avatar).into(img);
             }
         }
 
@@ -261,26 +326,26 @@ public class CandidateDetailsFragment extends Fragment {
 
     private void loadCandidateOffice(String office) {
         String officeTitle = "Candidate for \n" + office;
-        TextView officeView = (TextView) parent.findViewById(R.id.chapterPosition);
+        TextView officeView = (TextView) getActivity().findViewById(R.id.chapterPosition);
 
         officeView.setText(officeTitle);
     }
 
     private void loadCandidateName(String candidateName) {
-        TextView nameView = (TextView) parent.findViewById(R.id.memberName);
+        TextView nameView = (TextView) getActivity().findViewById(R.id.memberName);
 
         nameView.setText(candidateName);
     }
 
     private void loadCandidateProfile(String profile) {
-        TextView profileView = (TextView) parent.findViewById(R.id.scrolledProfile);
+        TextView profileView = (TextView) getActivity().findViewById(R.id.scrolledProfile);
         profileView.setText(profile);
     }
 
     private void loadCandidateRating(String candidateName) {
         float rating = candidatesRatings.get(candidateName);
 
-        ratingBar = (RatingBar) parent.findViewById(R.id.candidateRating);
+        ratingBar = (RatingBar) getActivity().findViewById(R.id.candidateRating);
         ratingBar.setRating(rating);
     }
 
@@ -297,12 +362,10 @@ public class CandidateDetailsFragment extends Fragment {
     private class OfficeCandidateListener implements AdapterView.OnItemClickListener {
 
         @Override
-        public void onItemClick(AdapterView<?> parent, View nameView, int position, long id) {
-            String selectedCandidate = (String) parent.getItemAtPosition(position);
+        public void onItemClick(AdapterView<?> parentView, View nameView, int position, long id) {
+            String selectedCandidate = (String) parentView.getItemAtPosition(position);
 
             populateCandidateView(selectedCandidate);
-
-            candidatesSheet.hideSheet();
         }
     }
 

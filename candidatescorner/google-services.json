@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "176312141551",
+    "firebase_url": "https://candiatescorner.firebaseio.com",
+    "project_id": "candiatescorner",
+    "storage_bucket": "candiatescorner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:176312141551:android:6b5b52ec7b7a8701",
+        "android_client_info": {
+          "package_name": "com.example.candidatescorner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "176312141551-g0a6dfm7cll281hfgs0g7291osvs17b3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBWsPcGFT_soNV7BfuFTGhhy9PyxfSh4c"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

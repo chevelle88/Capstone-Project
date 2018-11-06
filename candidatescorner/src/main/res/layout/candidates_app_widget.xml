@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="@dimen/widget_margin">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
 
         <ImageView
             android:id="@+id/appCandiateImg"
-            android:layout_width="wrap_content"
+            android:layout_width="38dp"
             android:layout_height="41dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:contentDescription="@string/widgetImg"
             android:src="@drawable/violet" />
 
         <TextView
             android:id="@+id/appCandidateInfo"
-            android:layout_width="175dp"
+            android:layout_width="170dp"
             android:layout_height="41dp"
+            android:drawablePadding="3dp"
+            android:background="@color/others_list_color"
+            android:lines="2"
             android:textAlignment="center"
             android:textColor="@color/colorPrimaryDark"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:text="LaTonya Edmond for \nSergeant-At-Arms"
-            android:maxLines="2"/>
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

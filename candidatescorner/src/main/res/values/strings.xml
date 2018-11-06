@@ -6,27 +6,37 @@
     <string name="all_candidates_title">All Candidates</string>
     <string name="top_candidates_title">Top Rated Candidates</string>
     <string name="run_office_title">Run for Office</string>
+    <string name="sign_out_title">Sign Out</string>
 
     <!-- Candidate Details Titles -->
     <string name="profile_label">Profile:</string>
     <string name="rating_label">Rate candidate:</string>
+    <string name="photoFldDesc">Candidate Photo</string>
+    <string name="fabBtnDesc">Select candidate to view</string>
 
     <!-- Remote Database-->
     <string name="restSqlHost">annapolisalumnaedstcloud.org</string>
     <string name="restSqlPath">restsql-0.8.12/res/Candidates</string>
     <string name="acceptedContentType">application/json</string>
 
-    <!-- No Candidates Message -->
-    <string name="noCandidates">No candidates available at this time.</string>
+    <!-- App Widget -->
+    <string name="widgetImg">African Violet</string>
+    <string name="widgetTitle">Annapolis DST Candidate</string>
+    <string name="noCandidates">No candidates available.</string>
 
     <!-- Data Keys -->
     <string name="candidates_detail_key">com.example.candidatescorner.DETAIL</string>
     <string name="candidate_selected_key">com.example.candidatescorner.SELECTED</string>
     <string name="office_candidates_key">com.example.candidatescorner.OFFICE</string>
     <string name="candidates_menu_key">com.example.candidatescorner.MENUOPTION</string>
+    <string name="candidate_id_key">com.example.candidatescorner.CANDIDATE_ID</string>
+    <string name="candidate_last_view_key">com.example.candidatescorner.LAST_VIEWED_CANDIDATE</string>
+    <string name="candidates_list_key">com.example.candidatescorner.OFFICE_CANDIDATES</string>
+    <string name="last_orientation_state">com.example.candidatescorner.ORIENTATION</string>
+    <string name="top_rated_ids">com.example.candidatescorner.TOP_RATED_IDS</string>
 
     <!-- Shared Preference Name -->
-    <string name="ratings_pref_file">CandidatesRatings</string>
+    <string name="candidates_pref_file">AnnapolisAlumnaeCandidates</string>
     <string name="election_year">election.year.pref</string>
 
     <!-- Dialog -->
@@ -34,5 +44,27 @@
     <string name="dlgTag">runForOffice</string>
     <string name="submitBtn">Submit</string>
     <string name="cancelBtn">Cancel</string>
+    <string name="dlgDirections">Select a chapter office of interest.</string>
+    <string name="chapterOffices">Chapter Office: </string>
+    <string name="chapterOfficesDesc">Select a chapter office</string>
+    <string name="dlg_msg">Message sent. Thanks for your interest.</string>
+
+    <!-- RunForOffice Email Properties -->
+    <string name="email_to">aactechdst@gmail.com</string>
+    <string name="email_subject">Annapolis Alumnae DST: Run For Office</string>
+    <string name="email_body">
+        Dear Nominating Chair,
+
+        The following member is interested running for a chapter office in the next election.
+          Member Name: %1$s
+          Member Email: %2$s
+          Chapter Office: %3$s
+
+        Please contact chapter member for additional information.
+    </string>
+
+    <!-- Members Login -->
+    <string name="title_activity_members_login">Candidates Corner Sign in</string>
+    <string name="login_error">Cannot login. Entered either an invalid username or password.</string>
 
 </resources>

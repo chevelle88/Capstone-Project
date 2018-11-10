@@ -38,6 +38,7 @@
     <!-- Shared Preference Name -->
     <string name="candidates_pref_file">AnnapolisAlumnaeCandidates</string>
     <string name="election_year">election.year.pref</string>
+    <string name="top_candidates_ids">top.candidate.ids</string>
 
     <!-- Dialog -->
     <string name="dlgTitle">Run For Office</string>
@@ -50,6 +51,8 @@
     <string name="dlg_msg">Message sent. Thanks for your interest.</string>
 
     <!-- RunForOffice Email Properties -->
+    <string name="email_type">text/plain</string>
+    <string name="email_uri">mailto:</string>
     <string name="email_to">aactechdst@gmail.com</string>
     <string name="email_subject">Annapolis Alumnae DST: Run For Office</string>
     <string name="email_body">
@@ -64,7 +67,7 @@
     </string>
 
     <!-- Members Login -->
-    <string name="title_activity_members_login">Candidates Corner Sign in</string>
+    <string name="members_login_title">Candidates Corner Sign in</string>
     <string name="login_error">Cannot login. Entered either an invalid username or password.</string>
 
 </resources>

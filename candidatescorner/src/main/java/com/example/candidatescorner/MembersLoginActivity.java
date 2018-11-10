@@ -11,8 +11,6 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class MembersLoginActivity extends AppCompatActivity {
 
-    private static final String TAG = "MembersLoginActivity";
-
     private static final int RC_SIGN_IN = 1947;
 
     @Override

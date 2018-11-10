@@ -3,9 +3,6 @@ package com.example.candidatescorner.details;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.fragment.app.Fragment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -17,6 +14,10 @@ import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
@@ -39,15 +40,12 @@ import java.util.TreeSet;
 
 public class CandidateDetailsFragment extends Fragment {
 
-    private static final String TAG = "DetailsFragmentActivity";
-
     private static final String HEADER_TITLE = "Select a candidate";
 
     private int candidateInView = -1;
     private String lastViewedCandidate = null;
 
     private RatingBar ratingBar;
-    //private MaterialSheetFab candidatesSheet;
 
     private Map<String, Candidate> officeCandidates;
     private Map<String, Float> candidatesRatings;
@@ -166,38 +164,42 @@ public class CandidateDetailsFragment extends Fragment {
     private void createMultiPanedCandidatesListingView() {
         boolean show = false;
         ListView listing = getActivity().findViewById(R.id.officeCandidates);
+        ListAdapter adapter = listing.getAdapter();
 
         if (officeCandidates.size() > 1) {
             show = true;
 
-            if (listing == null) {
+            if ((adapter == null) || (adapter.getCount() == 0)) {
                 createBottomSheetList();
             }
             else {
                 updateBottomSheetList();
             }
 
-            showCandidatesListingView(true);
         }
 
         showCandidatesListingView(show);
     }
 
     private void showCandidatesListingView(boolean show) {
-        //FloatingActionButton fab = getActivity().findViewById(R.id.candidatesFab);
+        BottomSheetBehavior behavior = getSheetBehavior();
+        behavior.setHideable(true);
+
+        if (show) {
+            behavior.setPeekHeight(300);
+            behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+        else {
+            behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+    }
+
+    private BottomSheetBehavior getSheetBehavior() {
         LinearLayout candidatesSheet = getActivity().findViewById(R.id.viewLayout);
         CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)candidatesSheet.getLayoutParams();
         BottomSheetBehavior behavior = (BottomSheetBehavior)params.getBehavior();
 
-        if (show) {
-            //fab.show();
-            behavior.setPeekHeight(200);
-            behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-        else {
-            //fab.hide();
-            behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
+        return behavior;
     }
 
     private void createBottomSheetList() {
@@ -228,7 +230,7 @@ public class CandidateDetailsFragment extends Fragment {
 
     private void updateBottomSheetList() {
         String [] candidatesNames = getCandidatesNames();
-        ListView listing = (ListView) getActivity().findViewById(R.id.officeCandidates);
+        ListView listing = getActivity().findViewById(R.id.officeCandidates);
         HeaderViewListAdapter hdrAdapter = (HeaderViewListAdapter)listing.getAdapter();
         ArrayAdapter<String> namesAdapter = (ArrayAdapter<String>)hdrAdapter.getWrappedAdapter();
 
@@ -237,7 +239,7 @@ public class CandidateDetailsFragment extends Fragment {
     }
 
     private void initRatingBar() {
-        ratingBar = (RatingBar) getActivity().findViewById(R.id.candidateRating);
+        ratingBar = getActivity().findViewById(R.id.candidateRating);
 
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
 
@@ -250,12 +252,16 @@ public class CandidateDetailsFragment extends Fragment {
                 }
 
                 Set<String> keys = officeCandidates.keySet();
+                SharedPreferences.Editor editor = candidatesPref.edit();
 
                 for (String key : keys) {
                     candidate = officeCandidates.get(key);
 
                     if (candidate.getId() == candidateInView) {
                         candidatesRatings.put(key, new Float(rating));
+
+                        editor.putFloat(key, rating);
+                        editor.commit();
                         break;
                     }
                 }
@@ -287,7 +293,7 @@ public class CandidateDetailsFragment extends Fragment {
     private void populateCandidateView(String candidateToView) {
         Candidate candidate = officeCandidates.get(candidateToView);
 
-        if (candidateInView == candidate.getId()) {
+        if ((candidate == null) || (candidateInView == candidate.getId())) {
             return;
         }
 
@@ -326,26 +332,26 @@ public class CandidateDetailsFragment extends Fragment {
 
     private void loadCandidateOffice(String office) {
         String officeTitle = "Candidate for \n" + office;
-        TextView officeView = (TextView) getActivity().findViewById(R.id.chapterPosition);
+        TextView officeView = getActivity().findViewById(R.id.chapterPosition);
 
         officeView.setText(officeTitle);
     }
 
     private void loadCandidateName(String candidateName) {
-        TextView nameView = (TextView) getActivity().findViewById(R.id.memberName);
+        TextView nameView = getActivity().findViewById(R.id.memberName);
 
         nameView.setText(candidateName);
     }
 
     private void loadCandidateProfile(String profile) {
-        TextView profileView = (TextView) getActivity().findViewById(R.id.scrolledProfile);
+        TextView profileView = getActivity().findViewById(R.id.scrolledProfile);
         profileView.setText(profile);
     }
 
     private void loadCandidateRating(String candidateName) {
         float rating = candidatesRatings.get(candidateName);
 
-        ratingBar = (RatingBar) getActivity().findViewById(R.id.candidateRating);
+        ratingBar = getActivity().findViewById(R.id.candidateRating);
         ratingBar.setRating(rating);
     }
 
@@ -363,9 +369,11 @@ public class CandidateDetailsFragment extends Fragment {
 
         @Override
         public void onItemClick(AdapterView<?> parentView, View nameView, int position, long id) {
+            BottomSheetBehavior behavior = getSheetBehavior();
             String selectedCandidate = (String) parentView.getItemAtPosition(position);
 
             populateCandidateView(selectedCandidate);
+            behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     }
 

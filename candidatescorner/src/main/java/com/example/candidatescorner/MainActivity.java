@@ -16,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
-import android.util.Log;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
@@ -57,15 +56,13 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     private List<String> topRatedCandidates;
     private boolean restartLoader = false;
 
-    private static final String TAG = "MainActivity";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent;
         String key;
-        int lastOrientationState;
+        Intent intent;
+        String prefFile;
 
         setContentView(R.layout.activity_main);
 
@@ -79,12 +76,16 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         // Set view status.
         setMultiPanedState();
 
+        // Get device's orientation.
         orientationState = getResources().getConfiguration().orientation;
+
+        // Get preference file.
+        prefFile = getString(R.string.candidates_pref_file);
+        candidatesPref = this.getSharedPreferences(prefFile, 0);
 
         // Load the candidates fragment.
         if (savedInstanceState == null) {
 
-            Log.i(TAG,"has no savedInstanceState");
             // Set default menu option.
             candidatesOption = ALL_CANDIDATES;
 
@@ -97,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         }
         else {
 
-            Log.i(TAG,"has savedInstanceState");
             //Get current menu option.
             key = getString(R.string.candidates_menu_key);
             candidatesOption = savedInstanceState.getInt(key, ALL_CANDIDATES);
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
             // Get last orientation state.
             key = getString(R.string.last_orientation_state);
-            lastOrientationState = savedInstanceState.getInt(key);
+            int lastOrientationState = savedInstanceState.getInt(key);
 
             // Set restartLoader based upon last orientation state.
             restartLoader = (lastOrientationState != orientationState);
@@ -126,6 +126,9 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     public void onResume() {
         super.onResume();
 
+        // Load IDs of the top-rated candidates.
+        loadTopCandidatesIdsFromPrefs();
+
         // Configure the preference file, CandidatesRatings.
         configureCandidateRatingsPrefs();
 
@@ -135,6 +138,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        SharedPreferences.Editor editor;
 
         String key = getString(R.string.candidates_menu_key);
         outState.putInt(key, candidatesOption);
@@ -147,6 +152,18 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
             key = getString(R.string.top_rated_ids);
             outState.putString(key, savedIds);
+
+            /*
+             * Save the IDs of the top-rated candidates to
+             * a preference file if the app is not multi-paned.
+             */
+            if (!isMultiPaned()) {
+                key = getString(R.string.top_candidates_ids);
+
+                editor = candidatesPref.edit();
+                editor.putString(key, savedIds);
+                editor.commit();
+            }
         }
     }
 
@@ -250,19 +267,19 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         String emailBody = getString(R.string.email_body,
                 user.getDisplayName(), user.getEmail(), selectedOffice);
         String dlgMsg = getString(R.string.dlg_msg);
+        String emailType = getString(R.string.email_type);
+        String emailUri = getString(R.string.email_uri);
 
         // Build the email intent.
         emailIntent = new Intent(Intent.ACTION_SENDTO);
-        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setDataAndType(Uri.parse(emailUri), emailType);
         emailIntent.putExtra(Intent.EXTRA_EMAIL, receivers);
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailSubject);
         emailIntent.putExtra(Intent.EXTRA_TEXT, emailBody);
-        emailIntent.setType("text/plain");
 
 
         if (emailIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(emailIntent);
-
         }
 
         dialog.dismiss();
@@ -281,7 +298,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     }
 
     public boolean isRestartLoader() {
-        Log.i(TAG, "restartLoader: " + restartLoader);
         return restartLoader;
     }
 
@@ -327,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
         ids = candidatesFrag.findCandidatesIds(topRatedCandidates);
 
-        if (ids == null) {
+        if ((ids == null) || ids.isEmpty()) {
             return savedIds;
         }
 
@@ -344,14 +360,29 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         return idsList.toString();
     }
 
+    private void loadTopCandidatesIdsFromPrefs() {
+
+        // Return if the app layout is multi-paned.
+        if (isMultiPaned()) {
+            return;
+        }
+
+        String key = getString(R.string.top_candidates_ids);
+        SharedPreferences.Editor editor = candidatesPref.edit();
+
+        // Get the candidate IDs.
+        savedIds = candidatesPref.getString(key, "");
+
+        // Remove candidate IDs.
+        editor.remove(key).commit();
+    }
+
     private void configureCandidateRatingsPrefs() {
         String storedElectionYear = null;
         SharedPreferences.Editor editor = null;
-        String prefFile = getString(R.string.candidates_pref_file);
         String electionYearPref = getString(R.string.election_year);
         String curElectionYear = CandidatesDBUtil.getElectionYear();
 
-        candidatesPref = this.getSharedPreferences(prefFile, 0);
         storedElectionYear = candidatesPref.getString(electionYearPref, null);
         editor = candidatesPref.edit();
 

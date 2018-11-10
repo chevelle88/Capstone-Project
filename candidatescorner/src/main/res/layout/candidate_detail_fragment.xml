@@ -100,6 +100,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="@color/bottom_sheet_color"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <ListView
@@ -108,38 +109,5 @@
             android:layout_height="match_parent" />
 
     </LinearLayout>
-
-
-
-<!--
-    <com.example.candidatescorner.details.CandidateDetailsFab
-        android:id="@+id/candidatesFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_gravity="bottom|end"
-        android:src="@mipmap/ic_candidates"
-        android:contentDescription="Select candidate to view"
-        />
-
-    <com.gordonwong.materialsheetfab.DimOverlayFrameLayout
-        android:id="@+id/overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <io.codetail.widget.RevealLinearLayout
-        android:id="@+id/viewLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="end|bottom"
-        android:orientation="vertical">
-
-        <ListView
-            android:id="@+id/officeCandidates"
-            android:layout_width="260dp"
-            android:layout_height="300dp" />
-
-    </io.codetail.widget.RevealLinearLayout>
-    -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

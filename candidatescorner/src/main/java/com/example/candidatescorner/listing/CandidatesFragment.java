@@ -83,7 +83,7 @@ public class CandidatesFragment extends Fragment {
         multiPaned = activity.isMultiPaned();
 
         // Get the toolbar.
-        Toolbar toolbar = (Toolbar) activity.findViewById(R.id.aacdstToolbar);
+        Toolbar toolbar = activity.findViewById(R.id.aacdstToolbar);
         activity.setSupportActionBar(toolbar);
 
         // Create a data observer.
@@ -91,7 +91,7 @@ public class CandidatesFragment extends Fragment {
         dataObserver.setCandidatesFragment(this);
 
         // Get recyclerview instance and configure its layout manager and adapter.
-        RecyclerView candidates = (RecyclerView)activity.findViewById(R.id.candidates_list);
+        RecyclerView candidates = activity.findViewById(R.id.candidates_list);
         candidates.setLayoutManager(new LinearLayoutManager(activity));
         candidates.setAdapter(new CandidatesAdapter(activity));
 
@@ -107,17 +107,22 @@ public class CandidatesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        MainActivity activity = (MainActivity)candidateListener;
+
+        if (!activity.isMultiPaned()) {
+            activity.getSupportLoaderManager().restartLoader(0, null, activity);
+        }
     }
 
     public void showCandidatesListing(Cursor data) {
         CandidatesAdapter adapter = null;
         MainActivity activity = (MainActivity)candidateListener;
-        TextView emptySlate = (TextView) activity.findViewById(R.id.emptySlate);
-        RecyclerView candidates = (RecyclerView)activity.findViewById(R.id.candidates_list);
+        TextView emptySlate = activity.findViewById(R.id.emptySlate);
+        RecyclerView candidates = activity.findViewById(R.id.candidates_list);
 
         if ((data != null) && data.getCount() > 0) {
 
-            //adapter = new CandidatesAdapter(activity);
             adapter = (CandidatesAdapter)candidates.getAdapter();
 
             if (multiPaned && !activity.detailsInMultiPanedLoaded()) {
@@ -147,14 +152,14 @@ public class CandidatesFragment extends Fragment {
 
     public List<Integer> findCandidatesIds(List<String> candidates) {
         MainActivity activity = (MainActivity)candidateListener;
-        RecyclerView recyclerView = (RecyclerView)activity.findViewById(R.id.candidates_list);
+        RecyclerView recyclerView = activity.findViewById(R.id.candidates_list);
 
         return ((CandidatesAdapter)recyclerView.getAdapter()).getCandidatesIds(candidates);
     }
 
     public void showCandidateDetails() {
         MainActivity activity = (MainActivity)candidateListener;
-        RecyclerView candidates = (RecyclerView)activity.findViewById(R.id.candidates_list);
+        RecyclerView candidates = activity.findViewById(R.id.candidates_list);
         CandidatesAdapter candidateAdapter = (CandidatesAdapter)candidates.getAdapter();
         String candidateToView;
         Candidate candidate;

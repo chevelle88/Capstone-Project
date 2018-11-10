@@ -115,24 +115,4 @@ public class CandidatesAdapter extends RecyclerView.Adapter<CandidatesView> {
         return candidate;
     }
 
-    public int findCandidatePosition(int candidateId) {
-        int position = 0;
-        Candidate candidate;
-
-        if (candidateId == RecyclerView.NO_ID) {
-            return 0;
-        }
-
-        for (int idx = 0; idx < candidates.size(); idx++) {
-            candidate = candidates.get(idx);
-
-            if (candidate.getId() == candidateId) {
-                position = idx;
-                break;
-            }
-        }
-
-        return position;
-    }
-
 }

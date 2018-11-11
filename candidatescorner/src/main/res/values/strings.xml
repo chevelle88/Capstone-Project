@@ -70,4 +70,7 @@
     <string name="members_login_title">Candidates Corner Sign in</string>
     <string name="login_error">Cannot login. Entered either an invalid username or password.</string>
 
+    <!-- Guest User Access -->
+    <string name="guest_pwd">G3stAn@p#4</string>
+
 </resources>

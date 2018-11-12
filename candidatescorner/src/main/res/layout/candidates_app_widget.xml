@@ -31,7 +31,8 @@
             android:textAlignment="center"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="13sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:contentDescription="@string/widgetInfo"/>
 
     </LinearLayout>
 

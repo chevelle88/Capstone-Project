@@ -13,7 +13,7 @@
             android:id="@+id/candidatePhoto"
             android:layout_width="81dp"
             android:layout_height="127dp"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_marginStart="24dp"
             android:layout_marginTop="15dp"
@@ -24,72 +24,78 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_toRightOf="@id/candidatePhoto"
+            android:layout_toEndOf="@id/candidatePhoto"
             android:layout_marginTop="36dp"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:contentDescription="@string/nameDesc"/>
         
         <TextView
             android:id="@+id/chapterPosition"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="18dp"
             android:maxLines="2"
             android:textAlignment="center"
             android:textColor="@color/colorPrimary"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_toRightOf="@id/candidatePhoto"
-            android:layout_below="@+id/memberName" />
+            android:layout_toEndOf="@id/candidatePhoto"
+            android:layout_below="@+id/memberName"
+            android:contentDescription="@string/officeDesc"/>
 
         <TextView
             android:id="@+id/profileLabel"
             android:layout_width="190dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="28dp"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="30dp"
             android:text="@string/profile_label"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@id/candidatePhoto"/>
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/candidatePhoto"
+            android:contentDescription="@string/profile_label"/>
 
         <TextView
             android:id="@+id/scrolledProfile"
             android:layout_width="320dp"
             android:layout_height="170dp"
-            android:layout_marginLeft="28dp"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="25dp"
             android:maxLines="6"
             android:scrollbars="vertical"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@id/profileLabel" />
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/profileLabel"
+            android:contentDescription="@string/profileDesc"/>
 
         <TextView
             android:id="@+id/ratingLabel"
             android:layout_width="190dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="28dp"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="30dp"
             android:text="@string/rating_label"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@id/scrolledProfile"/>
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/scrolledProfile"
+            android:contentDescription="@string/rating_label"/>
 
         <RatingBar
             android:id="@+id/candidateRating"
             android:layout_width="250dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="28dp"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="16dp"
             android:numStars="5"
             android:stepSize="0.5"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@id/ratingLabel"/>
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/ratingLabel"
+            android:contentDescription="@string/ratingDesc"/>
         
 
     </RelativeLayout>

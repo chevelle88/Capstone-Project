@@ -1,9 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'chevelle'
+            keyPassword 'La#0n6@'
+            storeFile file('candidates-corner.jks')
+            storePassword 'g0C3r4k8'
+        }
+    }
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
-
     defaultConfig {
         applicationId "com.example.candidatescorner"
         minSdkVersion 23
@@ -20,6 +27,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 }
@@ -35,7 +43,6 @@ dependencies {
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-beta01', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
     implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'

@@ -10,42 +10,46 @@
         android:id="@+id/candidateImg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="25dp"
-        android:layout_marginTop="10dp" />
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="10dp"
+        android:contentDescription="@null"/>
 
     <TextView
         android:id="@+id/candidateName"
         android:layout_width="255dp"
         android:layout_height="30dp"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="20dp"
-        android:layout_toRightOf="@id/candidateImg"
+        android:layout_marginStart="20dp"
+        android:layout_toEndOf="@id/candidateImg"
         android:paddingBottom="5dp"
         android:paddingTop="5dp"
         android:textAlignment="center"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:contentDescription="@string/nameDesc"/>
 
     <TextView
         android:id="@+id/candidateOffice"
         android:layout_width="255dp"
         android:layout_height="30dp"
         android:layout_below="@id/candidateName"
-        android:layout_marginLeft="20dp"
-        android:layout_toRightOf="@id/candidateImg"
+        android:layout_marginStart="20dp"
+        android:layout_toEndOf="@id/candidateImg"
         android:paddingBottom="5dp"
         android:paddingTop="5dp"
         android:textAlignment="center"
         android:textSize="14sp"
-        android:textStyle="italic" />
+        android:textStyle="italic"
+        android:contentDescription="@string/officeDesc"/>
 
     <TextView
         android:id="@+id/candidateId"
         android:layout_width="45dp"
         android:layout_height="25dp"
-        android:layout_toRightOf="@id/candidateName"
-        android:visibility="invisible" />
+        android:layout_toEndOf="@id/candidateName"
+        android:visibility="invisible"
+        android:contentDescription="@null"/>
 
 </RelativeLayout>

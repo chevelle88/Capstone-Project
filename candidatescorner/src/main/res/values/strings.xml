@@ -8,11 +8,15 @@
     <string name="run_office_title">Run for Office</string>
     <string name="sign_out_title">Sign Out</string>
 
-    <!-- Candidate Details Titles -->
+    <!-- Candidate Details Labels and Descriptions -->
     <string name="profile_label">Profile:</string>
     <string name="rating_label">Rate candidate:</string>
     <string name="photoFldDesc">Candidate Photo</string>
     <string name="fabBtnDesc">Select candidate to view</string>
+    <string name="nameDesc">Name of Candidate</string>
+    <string name="officeDesc">Chapter Office</string>
+    <string name="profileDesc">Summary of Candidate Experience</string>
+    <string name="ratingDesc">Candidate Rating</string>
 
     <!-- Remote Database-->
     <string name="restSqlHost">annapolisalumnaedstcloud.org</string>
@@ -23,6 +27,7 @@
     <string name="widgetImg">African Violet</string>
     <string name="widgetTitle">Annapolis DST Candidate</string>
     <string name="noCandidates">No candidates available.</string>
+    <string name="widgetInfo">Candidate Info</string>
 
     <!-- Data Keys -->
     <string name="candidates_detail_key">com.example.candidatescorner.DETAIL</string>
